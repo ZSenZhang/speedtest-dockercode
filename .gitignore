@@ -1,1 +1,4 @@
 tools/delegationtmp
+spservers/*.json
+spservers/*.txt
+spservers/*.ip

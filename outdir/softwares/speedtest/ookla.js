@@ -53,8 +53,10 @@ var globaltimeout = 120000;
         var printscnname = "./" + tracename + ".png";
         var printerrname = "./" + tracename + ".err.png";
 
+        var keyarg = "--ssl-key-log-file=./"+tracename+".key";
+        var netlogarg = "--log-net-log=./"+tracename+".netlog";
         console.log("ookla test:" + tracejson);
-        const browser = await puppeteer.launch({ headless: true })
+        const browser = await puppeteer.launch({ headless: true , args: [keyarg, netlogarg] })
         const page = await browser.newPage()
         await page.setViewport({ width: 1240, height: 1024 })
         //await page.tracing.start({path: 'trace.json', categories: ['devtools.timeline']})

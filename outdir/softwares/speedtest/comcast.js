@@ -1,5 +1,5 @@
 'use strict';
-
+console.log(`Current directory: ${process.cwd()}`);
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 var tracename = "comcast";
@@ -52,12 +52,14 @@ var globaltimeout = 120000;
         var errorfile = "./" + tracename + ".err";
         var printscnname = "./" + tracename + ".png";
         var printerrname = "./" + tracename + ".err.png";
+        var keyarg = "--ssl-key-log-file=./"+tracename+".key";
+        var netlogarg = "--log-net-log=./"+tracename+".netlog";
         console.log("comcast:" + tracejson);
         // {headless: true}
-        const browser = await puppeteer.launch({ headless: true });
+        const browser = await puppeteer.launch({ headless: true , args: [keyarg, netlogarg] });
         // const browser = await puppeteer.launch();
         const page = await browser.newPage();
-        await page.setViewport({ width: 1240, height: 1424 });
+        await page.setViewport({ width: 1240, height: 1024 });
 
         //   , categories: ['devtools.timeline', 'blink.user_timing']
         await page.tracing.start({ path: tracejson, categories: ['devtools.timeline', 'blink.user_timing'] })
@@ -173,7 +175,7 @@ var globaltimeout = 120000;
             .catch((err) => {
             });
 
-        await page.screenshot({ path: printscnname })
+        await page.screenshot({ path: printscnname }).catch((e)=>{console.log("print screen error",e)});
 
         const latency = await page.$eval('div.justify-between:nth-child(2) > dd:nth-child(2)', el => el.innerText)
             .catch((err) => {
@@ -205,7 +207,7 @@ var globaltimeout = 120000;
 
         const downloadspeedtemp = await page.$eval('summary.relative > div:nth-child(1) > dl > dd', el => el.innerText)
             .catch((err) => {
-                fs.writeFileSync(errorfile, "Error downloadspeedtemp");
+                fs.writeFile32Sync(errorfile, "Error downloadspeedtemp");
                 fs.writeFileSync(errorfile, err);
                 page.screenshot({ path: printerrname })
             });

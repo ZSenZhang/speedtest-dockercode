@@ -11,6 +11,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 )
 
 type OoklaServer struct {
@@ -28,6 +29,11 @@ type OoklaServer struct {
 	ASN         string `json:"asn"`
 }
 
+type ResultsCarrier struct {
+	Hint    string
+	Servers []OoklaServer
+}
+
 type Config struct {
 	CreateFile     string
 	ReadFile       string
@@ -40,10 +46,12 @@ type Config struct {
 }
 
 const OoklaQuery = "https://www.speedtest.net/api/js/servers?engine=js&search=%s&https_functional=true&limit=1000"
+const MaxRecord = 100
 
 var cfg *Config
 var wg sync.WaitGroup
 var allservers []OoklaServer
+var hintsmap map[int][]string
 
 func main() {
 	//	ip, asn := ResolveNet("okc-speedtest.onenet.net.prod.hosts.ooklaserver.net:8080")
@@ -67,29 +75,31 @@ func main() {
 		bvalue, _ := ioutil.ReadAll(jsonFile)
 		json.Unmarshal(bvalue, &allservers)
 	} else if len(cfg.CreateFile) > 0 {
-		allhints := GenerateHints("", 3)
+		hintsmap = make(map[int][]string)
+		inithintlength := 2
+		maxhintlength := 6
+		hintsmap[inithintlength] = GenerateHints("", inithintlength)
 		allservers = make([]OoklaServer, 0)
-		rchan := make(chan []OoklaServer)
+		rchan := make(chan ResultsCarrier)
+		workerchan := make(chan int, cfg.Workers)
 		go ResultCollector(rchan)
-		for i := 1; i <= len(allhints); i++ {
-			wg.Add(1)
-			go QueryServers(allhints[i-1], rchan)
-			if i%cfg.Workers == 0 {
-				log.Println("Max worker reached", i, allhints[i])
+		for h := inithintlength; h <= maxhintlength; h++ {
+			if allhints, hexist := hintsmap[h]; hexist && len(allhints) > 0 {
+				log.Println("Hint round:", h, len(allhints))
+				for i := 1; i <= len(allhints); i++ {
+					wg.Add(1)
+					go QueryServers(allhints[i-1], rchan, workerchan)
+					workerchan <- 1
+				}
 				wg.Wait()
 			}
 		}
-		wg.Wait()
 		close(rchan)
-		i := 1
 		//resolve all IP and Asn
 		for oidx, _ := range allservers {
 			wg.Add(1)
-			go ResolveIP(oidx)
-			if i%cfg.Workers == 0 {
-				wg.Wait()
-			}
-			i++
+			go ResolveIP(oidx, workerchan)
+			workerchan <- 1
 		}
 		wg.Wait()
 		file, _ := json.MarshalIndent(allservers, "", " ")
@@ -124,7 +134,7 @@ func main() {
 	}*/
 }
 
-func QueryServers(hints string, results chan []OoklaServer) {
+func QueryServers(hints string, results chan ResultsCarrier, wchan chan int) {
 	qstring := fmt.Sprintf(OoklaQuery, hints)
 	response, err := http.Get(qstring)
 	if err != nil {
@@ -136,19 +146,31 @@ func QueryServers(hints string, results chan []OoklaServer) {
 	}
 	rspobj := []OoklaServer{}
 	json.Unmarshal(responseData, &rspobj)
-	results <- rspobj
+	resultobj := ResultsCarrier{Hint: hints, Servers: rspobj}
+	results <- resultobj
+	time.Sleep(1 * time.Second)
 	wg.Done()
+	<-wchan
 }
 
-func ResultCollector(rchan chan []OoklaServer) {
+func ResultCollector(rchan chan ResultsCarrier) {
 	servermap := make(map[string]bool)
 	for r := range rchan {
-		log.Println("Result contains ", len(r), "records")
-		for _, server := range r {
+		log.Println("Result", r.Hint, "contains", len(r.Servers), "records")
+		for _, server := range r.Servers {
 			if _, sexist := servermap[server.Id]; !sexist {
 				//only insert those had not seen before
 				servermap[server.Id] = true
 				allservers = append(allservers, server)
+			}
+		}
+		//got max number of record, need one level deeper
+		if len(r.Servers) == MaxRecord {
+			newlen := len(r.Hint) + 1
+			if _, hexist := hintsmap[newlen]; !hexist {
+				hintsmap[newlen] = GenerateHints(r.Hint, 1)
+			} else {
+				hintsmap[newlen] = append(hintsmap[newlen], GenerateHints(r.Hint, 1)...)
 			}
 		}
 	}
@@ -168,9 +190,10 @@ func GenerateHints(hint string, len int) []string {
 	return hints
 }
 
-func ResolveIP(serveridx int) {
+func ResolveIP(serveridx int, wchan chan int) {
 	allservers[serveridx].IPv4, allservers[serveridx].ASN = ResolveNet(allservers[serveridx].Host)
 	wg.Done()
+	<-wchan
 }
 
 //given a hostname:port, return the first ipv4 address, and the asn

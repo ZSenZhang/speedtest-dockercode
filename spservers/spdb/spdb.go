@@ -35,11 +35,13 @@ func connectmongo(mongopath, dbname string) (*mongo.Client, *mongo.Database) {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongopath))
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
+		return nil, nil
 	}
 	err = client.Ping(context.TODO(), nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
+		return nil, nil
 	}
 	log.Println("Database connected")
 	return client, client.Database(dbname)
@@ -61,14 +63,16 @@ func NewMongoDB(config string, dbname string) *SpeedtestMongo {
 	cfile, err := os.Open(config)
 	defer cfile.Close()
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
+		return nil
 	}
 	c := &SpeedtestMongo{}
 	decoder := json.NewDecoder(cfile)
 	c.config = &DBConfig{}
 	err = decoder.Decode(c.config)
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
+		return nil
 	}
 	mongostr := "mongodb://"
 	if c.config.DB == "" {
@@ -102,6 +106,7 @@ func (cm *SpeedtestMongo) ResetEnable(servertype string) {
 
 func (cm *SpeedtestMongo) InsertServers(servers []SpeedServer) (int, error) {
 	if cm.Database != nil && len(servers) > 0 {
+		nodoc := 0
 		cspeed := cm.Database.Collection(colserver)
 		opt := options.FindOneAndReplace().SetUpsert(true)
 		for _, ser := range servers {
@@ -109,14 +114,15 @@ func (cm *SpeedtestMongo) InsertServers(servers []SpeedServer) (int, error) {
 			res := cspeed.FindOneAndReplace(context.TODO(), filter, ser, opt)
 			if res.Err() != nil {
 				if res.Err() == mongo.ErrNoDocuments {
-					log.Println("Server not found", ser.Type, ser.Id)
+					nodoc++
+					//	log.Println("Server not found", ser.Type, ser.Id)
 				} else {
 					log.Fatal(res.Err())
 				}
 			}
 		}
 
-		return 1, nil
+		return nodoc, nil
 	}
 	if cm.Database == nil {
 		return 0, errors.New("Database is nil")

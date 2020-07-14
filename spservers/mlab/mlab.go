@@ -1,15 +1,17 @@
-package main
+package mlab
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
-	"os"
-	"sort"
+	"path/filepath"
+	"serverlinks/iputils"
+	"spservers/common"
+	"spservers/spdb"
+	"strconv"
 )
 
 //choose from: ndt, ndt_ssl, ndt7
@@ -46,21 +48,39 @@ type ConfigNDT struct {
 	IPFile        string
 }
 
-func main() {
+func convmlabtomongo(cfg *common.Config, ndt []NDTServer) []spdb.SpeedServer {
+	spslice := make([]spdb.SpeedServer, len(ndt))
+	iph := iputils.NewIPHandler()
+	for nidx, nserver := range ndt {
+		loc := spdb.JSONPoint{Type: "Point", Coord: []float64{nserver.Lon, nserver.Lat}}
+		mlabinfo := spdb.MlabInfo{Url: nserver.Url, Version: nserver.Version}
+		spslice[nidx] = spdb.SpeedServer{Type: "mlab", Id: nserver.Site, Location: loc, Country: nserver.Country, City: nserver.City, Host: nserver.Host, IPv4: nserver.IPv4, IPv6: nserver.IPv6, Asnv4: iph.IPv4toASN(net.ParseIP(nserver.IPv4)), Enabled: true, LastUpdated: cfg.StartTime, Additional: mlabinfo}
+	}
+	return spslice
+}
+
+func LoadMlab(cfg *common.Config) []spdb.SpeedServer {
 	var allservers []NDTServer
-	cfg := &ConfigNDT{}
-	flag.StringVar(&cfg.CreateNDTFile, "n", "", "Crawl and create NDT server json file")
-	flag.StringVar(&cfg.OpenNDTFile, "o", "", "Open NDT server json file")
-	flag.StringVar(&cfg.NDTVersion, "ver", "ndt", "Select NDT version")
-	flag.StringVar(&cfg.SelectCountry, "country", "", "Select Country")
-	flag.StringVar(&cfg.IPFile, "ip", "", "Filename for list of IP")
-	flag.Parse()
-	if len(cfg.CreateNDTFile) > 0 {
-		allservers = MergeNDTservers(LoadSiteMeta(), LoadNDTServers("ndt"), LoadNDTServers("ndt_ssl"), LoadNDTServers("ndt7"))
-		file, _ := json.MarshalIndent(allservers, "", " ")
-		_ = ioutil.WriteFile(cfg.CreateNDTFile, file, 0644)
-		log.Println("loaded", len(allservers), "servers")
-	} else {
+	/*	cfg := &ConfigNDT{}
+		flag.StringVar(&cfg.CreateNDTFile, "n", "", "Crawl and create NDT server json file")
+		flag.StringVar(&cfg.OpenNDTFile, "o", "", "Open NDT server json file")
+		flag.StringVar(&cfg.NDTVersion, "ver", "ndt", "Select NDT version")
+		flag.StringVar(&cfg.SelectCountry, "country", "", "Select Country")
+		flag.StringVar(&cfg.IPFile, "ip", "", "Filename for list of IP")
+		flag.Parse()
+	*/
+	filename := "ndt_" + strconv.FormatInt(cfg.StartTime.Unix(), 10) + ".json"
+
+	if len(cfg.CreateFilePrefix) > 0 {
+		filename = filepath.Join(cfg.CreateFilePrefix, filename)
+	}
+	//if len(cfg.CreateNDTFile) > 0 {
+	allservers = MergeNDTservers(LoadSiteMeta(), LoadNDTServers("ndt"), LoadNDTServers("ndt_ssl"), LoadNDTServers("ndt7"))
+	file, _ := json.MarshalIndent(allservers, "", " ")
+	_ = ioutil.WriteFile(filename, file, 0644)
+	log.Println("loaded", len(allservers), "servers")
+	return convmlabtomongo(cfg, allservers)
+	/*} else {
 		jsonFile, err := os.Open(cfg.OpenNDTFile)
 		if err != nil {
 			log.Fatal(err)
@@ -68,15 +88,16 @@ func main() {
 		defer jsonFile.Close()
 		bvalue, _ := ioutil.ReadAll(jsonFile)
 		json.Unmarshal(bvalue, &allservers)
-	}
-
-	for _, s := range allservers {
-		sort.Strings(s.Version)
-		i := sort.SearchStrings(s.Version, cfg.NDTVersion)
-		if s.Country == "US" && s.Version[i] == cfg.NDTVersion {
-			fmt.Println(s.IPv4)
+	}*/
+	/*
+		for _, s := range allservers {
+			sort.Strings(s.Version)
+			i := sort.SearchStrings(s.Version, cfg.NDTVersion)
+			if s.Country == "US" && s.Version[i] == cfg.NDTVersion {
+				fmt.Println(s.IPv4)
+			}
 		}
-	}
+	*/
 }
 
 func LoadSiteMeta() []NDTMeta {
@@ -141,7 +162,6 @@ func MergeNDTservers(metadata []NDTMeta, ndts ...[]NDTServer) []NDTServer {
 					log.Println("No metadata", s.Site)
 				}
 			} else {
-				log.Println("site", s.Site, ndtidmap[s.Site].Version, s.Version)
 				ndtidmap[s.Site].Version = append(ndtidmap[s.Site].Version, s.Version[0])
 			}
 		}

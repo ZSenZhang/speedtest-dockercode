@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"path/filepath"
 	"spservers/common"
 	"spservers/spdb"
 	"strconv"
@@ -49,11 +50,9 @@ func LoadComcastServer(cfg *common.Config) []spdb.SpeedServer {
 	if cfg == nil {
 		log.Fatal("Comcast config nil")
 	}
-	filename := ""
-	if len(cfg.CreateFilePrefix) == 0 {
-		filename = cfg.CreateFilePrefix + ".comcast.json"
-	} else {
-		filename = "comcast_" + strconv.FormatInt(cfg.StartTime.Unix(), 10) + ".json"
+	filename := "comcast_" + strconv.FormatInt(cfg.StartTime.Unix(), 10) + ".json"
+	if len(cfg.CreateFilePrefix) > 0 {
+		filename = filepath.Join(cfg.CreateFilePrefix, filename)
 	}
 	/*	if len(cfg.OpenFile) > 0 {
 			//read and fill allserver

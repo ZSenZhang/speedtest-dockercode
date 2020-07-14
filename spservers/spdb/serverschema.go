@@ -15,7 +15,6 @@ type OoklaInfo struct {
 }
 
 type MlabInfo struct {
-	Site    string   `json:"site"`
 	Url     string   `json:"url"`
 	Version []string `json:"version"`
 }

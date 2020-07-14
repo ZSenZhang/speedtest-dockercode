@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"path/filepath"
 	"serverlinks/iputils"
 	"spservers/common"
 	"spservers/spdb"
@@ -83,11 +84,9 @@ func LoadOokla(cfg *common.Config) []spdb.SpeedServer {
 		json.Unmarshal(bvalue, &allservers)
 	} else
 	*/
-	filename := cfg.CreateFilePrefix
-	if len(cfg.CreateFilePrefix) == 0 {
-		filename = "ookla_" + strconv.FormatInt(cfg.StartTime.Unix(), 10) + ".json"
-	} else {
-		filename = cfg.CreateFilePrefix + ".ookla.json"
+	filename := "ookla_" + strconv.FormatInt(cfg.StartTime.Unix(), 10) + ".json"
+	if len(cfg.CreateFilePrefix) > 0 {
+		filename = filepath.Join(cfg.CreateFilePrefix, filename)
 	}
 	log.Println("Load Ookla", filename)
 	iphandler := iputils.NewIPHandler()
@@ -112,8 +111,6 @@ func LoadOokla(cfg *common.Config) []spdb.SpeedServer {
 	}
 	close(rchan)
 	//resolve all IP and Asn
-
-	log.Println("Done queries")
 	for oidx, _ := range allservers {
 		wg.Add(1)
 		go ResolveIP(oidx, iphandler, workerchan)

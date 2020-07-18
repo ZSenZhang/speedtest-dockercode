@@ -1,5 +1,4 @@
 #!/usr/bin/bash
-
 LNAME=`echo $USER`
 HNAME=`cat /home/$LNAME/hostalias`
 HOSTTYPE=`cat /home/$LNAME/vmtype`

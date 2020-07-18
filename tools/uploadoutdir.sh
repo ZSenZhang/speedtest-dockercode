@@ -1,6 +1,6 @@
 #!/usr/local/bin/bash
 HOSTSTR=""
-UPLOADDIR="/scratch/cloudspeedtest/outdir"
+UPLOADDIR="/scratch/cloudspeedtest/outdir/*"
 KEYLOC="/scratch/webspeedtest/cloud/speedtest_id_rsa"
 HOSTFILE="/scratch/cloudspeedtest/cloudhosts"
 NODES=""

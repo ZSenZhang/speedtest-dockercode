@@ -1,4 +1,5 @@
 #/bin/bash
+LNAME=`echo $USER`
 DATAFILEDIR=${1%/}
 OUTPUTDIR=${2%/}
 PEERINGFILE=""
@@ -7,10 +8,11 @@ PREFIXASFILE=""
 STARTTS=`date +%s`
 
 FIRSTHOP=5
-HOSTTYPE=`cat /home/ubuntu/vmtype`
+HOSTTYPE=`cat /home/$LNAME/vmtype`
 if [[ $HOSTTYPE == "amazon" ]]; then FIRSTHOP=5; fi
 if [[ $HOSTTYPE == "azure" ]]; then FIRSTHOP=6; fi
 if [[ $HOSTTYPE == "google" ]]; then FIRSTHOP=1; fi
+if [[ $HOSTTYPE == "googlestd" ]]; then FIRSTHOP=1; fi
 
 
 #check if scamper daemon is running (as root)
@@ -26,7 +28,7 @@ for files in `ls -t $DATAFILEDIR/*`; do
     if [[ $files == *"prefix2as" ]]; then PREFIXASFILE=$files; fi
 done
 
-HNAME=`cat /home/ubuntu/hostalias`
+HNAME=`cat /home/$LNAME/hostalias`
 FILEPREFIX=$HNAME.$STARTTS
 BDROUTPUT="$OUTPUTDIR/$FILEPREFIX.bdrmap.warts"
 METAOUTPUT="$OUTPUTDIR/$FILEPREFIX.bdrmap.meta"
@@ -49,5 +51,5 @@ tar cfvj $OUTPUTDIR/$FILEPREFIX.tar.bz2 $OUTPUTDIR/$FILEPREFIX.* --remove-files
 echo "Data Compression Completed"
 
 #do not sync data if speedtest is running. Data will be uploaded together with speedtest data 
-/usr/bin/flock -w 0 /home/ubuntu/sptestlock bash syncstoreage.bash
+/usr/bin/flock -w 0 /home/$LNAME/sptestlock bash syncstoreage.bash
 echo "Data Upload Completed"

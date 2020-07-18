@@ -1,19 +1,23 @@
 #!/usr/bin/bash
-
+LNAME=`echo $USER`
 CAIDA="192.172.226.0/24"
 STORAGE=""
-HNAME=`cat /home/ubuntu/vmtype`
+HNAME=`cat /home/$LNAME/vmtype`
 if [[ $HNAME == "amazon" ]]; then
-    STORAGE="52.224.0.0/11"
+    STORAGE="52.192.0.0/11"
 fi
 
 if [[ $HNAME == "azure" ]]; then
-    STORAGE="52.192.0.0/11"
+    STORAGE="52.224.0.0/11"
 fi
+
 if [[ $HNAME == "google" ]]; then
     STORAGE="172.217.0.0/16"
 fi
 
+if [[ $HNAME == "googlestd" ]]; then
+    STORAGE="172.217.0.0/16"
+fi
 
 PRIETH=`ls -1 /sys/class/net/ |head -n1`
 INETH="ifb0"

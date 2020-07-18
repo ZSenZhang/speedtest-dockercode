@@ -22,4 +22,3 @@ if [[ $HNAME!="" ]]; then
 else
     echo "Host alias not found"
 fi
-

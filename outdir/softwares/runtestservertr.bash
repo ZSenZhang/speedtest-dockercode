@@ -1,4 +1,5 @@
 #!/usr/bin/bash
+LNAME=`echo $USER`
 DATAFILEDIR=${1%/}
 if [ -z "$DATAFILEDIR" ]
 then
@@ -13,12 +14,13 @@ fi
 STARTTS=`date +%s`
 
 FIRSTHOP=5
-HOSTTYPE=`cat /home/ubuntu/vmtype`
+HOSTTYPE=`cat /home/$LNAME/vmtype`
 if [[ $HOSTTYPE == "amazon" ]]; then FIRSTHOP=5; fi
 if [[ $HOSTTYPE == "azure" ]]; then FIRSTHOP=6; fi
 if [[ $HOSTTYPE == "google" ]]; then FIRSTHOP=1; fi
+if [[ $HOSTTYPE == "googlestd" ]]; then FIRSTHOP=1; fi
 
-HNAME=`cat /home/ubuntu/hostalias`
+HNAME=`cat /home/$LNAME/hostalias`
 FILEPREFIX=$HNAME.$STARTTS
 
 SCCHECK=`ps aux|grep '^root.*scamper'|wc -l`
@@ -27,8 +29,8 @@ if [[ $SCCHECK == "0" ]]; then
     sudo scamper -D -p1000 -P12345;
 fi
 
-[ ! -d "/home/ubuntu/tmp" ] && mkdir /home/ubuntu/tmp
-TMPDIR=$(mktemp -d -t tr-XXXXXXXX --tmpdir=/home/ubuntu/tmp)
+[ ! -d "/home/$LNAME/tmp" ] && mkdir /home/$LNAME/tmp
+TMPDIR=$(mktemp -d -t tr-XXXXXXXX --tmpdir=/home/$LNAME/tmp)
 
 METAFILE=$TMPDIR/$FILEPREFIX.meta
 
@@ -42,7 +44,7 @@ for files in `ls $DATAFILEDIR/*.ip`; do
 done
 
 [ ! -d $OUTPUTDIR ] && mkdir -p $OUTPUTDIR
-cd $TMPDIR; sudo tar cjf /home/ubuntu/$OUTPUTDIR/$FILEPREFIX.trace.tar.bz2 $FILEPREFIX.* --remove-files
-cd /home/ubuntu;
+cd $TMPDIR; sudo tar cjf /home/$LNAME/$OUTPUTDIR/$FILEPREFIX.trace.tar.bz2 $FILEPREFIX.* --remove-files
+cd /home/$LNAME;
 sudo rm -rf $TMPDIR
 echo "TRACEROUTE ends"

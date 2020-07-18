@@ -1,5 +1,4 @@
 #!/usr/local/bin/bash
-
 HOSTFILE="/scratch/cloudspeedtest/cloudhosts"
 for arg in "$@"
 do
@@ -37,17 +36,18 @@ if [[ $NODES != "" ]]; then
     AMAZONHOST=""
     AZUREHOST=""
     GOOGLEHOST=""
+    GOOGLESTDHOST=""
     for node in $NODES
     do
         #can be more than one host matched the regex
-        HOSTS="$HOSTS "`grep "^$node\s" $HOSTFILE |awk '{print $1}'`
+        HOSTS="$HOSTS "`grep "^$node\s" $HOSTFILE | awk '{print $1}'`
     done
     UHOSTS=`echo $HOSTS|tr " " "\n"|sort|uniq`
     for host in $UHOSTS
     do
-        hname=`grep "^$host\s" $HOSTFILE|awk '{print $2}'`
+        hname=`grep "^$host\s" $HOSTFILE |awk '{print $2}'`
 #        HOSTSTR="$HOSTSTR -o ${hname}"
-        provider=`grep "^$host\s" $HOSTFILE|awk '{print $3}'`
+        provider=`grep "^$host\s" $HOSTFILE $STDHOSTFILE | awk '{print $3}'`
         case $provider in
             amazon)
                 AMAZONHOST="$AMAZONHOST -o ${hname}"
@@ -58,6 +58,8 @@ if [[ $NODES != "" ]]; then
             google)
                 GOOGLEHOST="$GOOGLEHOST -o ${hname}"
                 ;;
+            googlestd)
+                GOOGLESTDHOST="$GOOGLESTDHOST -o ${hname}"
         esac
     done
 fi
@@ -77,8 +79,13 @@ case $PROVIDER in
             echo $GOOGLEHOST
         fi
         ;;
+    googlestd)
+        if [[ $GOOGLESTDHOST != "" ]]; then
+            echo $GOOGLESTDHOST
+        fi
+        ;;        
     *)
-        echo $AMAZONHOST $AZUREHOST $GOOGLEHOST
+        echo $AMAZONHOST $AZUREHOST $GOOGLEHOST $GOOGLESTDHOST
         ;;
 esac
 

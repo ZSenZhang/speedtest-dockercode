@@ -6,8 +6,9 @@
 # sudo apt-get update;
 # sudo apt-get install libpcap-dev;
 # sudo apt install -y chromium-browser;
-EXPRPROFILE="/home/ubuntu/exprprofile"
-cd /home/ubuntu;
+LNAME=`echo $USER`
+EXPRPROFILE="/home/$LNAME/exprprofile"
+cd /home/$LNAME;
 rm $EXPRPROFILE
 #echo "Install golang..."
 #wget -q -O - https://raw.githubusercontent.com/canha/golang-tools-install-script/master/goinstall.sh | bash
@@ -33,7 +34,7 @@ echo "Downloading someta..."
 #sudo apt install python3-pip
 sudo apt-get install -y python3 -m venv xenv
 source xenv/bin/activate
-pip3 install -r /home/ubuntu/outdir/softwares/speedtest/requirements.txt
+pip3 install -r /home/$LNAME/outdir/softwares/speedtest/requirements.txt
 echo "install python libs"
 pip3 install asyncio
 
@@ -56,15 +57,15 @@ echo 'source ~/.nvm/nvm.sh' >> $EXPRPROFILE
 source $EXPRPROFILE
 
 nvm install node
-NODEPATH=`ls -1 /home/ubuntu/.nvm/versions/node |head -n1`
-echo "export PATH=$PATH:/home/ubuntu/.nvm/versions/node/$NODEPATH/bin" >> $EXPRPROFILE
+NODEPATH=`ls -1 /home/$LNAME/.nvm/versions/node |head -n1`
+echo "export PATH=$PATH:/home/$LNAME/.nvm/versions/node/$NODEPATH/bin" >> $EXPRPROFILE
 source $EXPRPROFILE
 
 npm install puppeteer
 npm install commander
 
 
-EXPEXIST=`grep "exprprofile" /home/ubuntu/.profile |wc -l`
+EXPEXIST=`grep "exprprofile" /home/$LNAME/.profile |wc -l`
 if [[ $EXPEXIST == "0" ]]; then
     echo "bash $EXPRPROFILE" >> ~/.profile
 fi

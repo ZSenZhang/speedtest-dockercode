@@ -74,12 +74,12 @@ if [[ $NODES != "" ]]; then
         if [[ $TESTRUN -eq 0 ]]; then
             if [[ $AMAZONHOST != "" ]]; then orgalorg $AMAZONHOST -u ubuntu -k $KEYLOC -r /home/ubuntu -i amazon.cmd -C sh; fi
             if [[ $AZUREHOST != "" ]]; then orgalorg $AZUREHOST -u ubuntu -k $KEYLOC -r /home/ubuntu -i azure.cmd -C sh; fi
-            if [[ $GOOGLEHOST != "" ]]; then orgalorg $GOOGLEHOST -u ubuntu -k $KEYLOC -r /home/ubuntu -i google.cmd -C sh; fi
+            if [[ $GOOGLEHOST != "" && $HOSTFILE == "/scratch/cloudspeedtest/cloudhosts" ]]; then orgalorg $GOOGLEHOST -u ubuntu -k $KEYLOC -r /home/ubuntu -i google.cmd -C sh; fi
             if [[ $GOOGLESTDHOST != "" ]]; then orgalorg $GOOGLESTDHOST -u caida -k $KEYLOC -r /home/caida -i googlestd.cmd -C sh; fi
         else
             if [[ $AMAZONHOST != "" ]]; then echo "orgalorg $AMAZONHOST -u ubuntu -k $KEYLOC -r /home/ubuntu -i amazon.cmd -C sh"; fi
             if [[ $AZUREHOST != "" ]]; then echo "orgalorg $AZUREHOST -u ubuntu -k $KEYLOC -r /home/ubuntu -i azure.cmd -C sh"; fi
-            if [[ $GOOGLEHOST != "" ]]; then echo "orgalorg $GOOGLEHOST -u ubuntu -k $KEYLOC -r /home/ubuntu -i google.cmd -C sh"; fi
+            if [[ $GOOGLEHOST != "" && $HOSTFILE == "/scratch/cloudspeedtest/cloudhosts" ]]; then echo "orgalorg $GOOGLEHOST -u ubuntu -k $KEYLOC -r /home/ubuntu -i google.cmd -C sh"; fi
             if [[ $GOOGLESTDHOST != "" ]]; then echo "orgalorg $GOOGLESTDHOST -u caida -k $KEYLOC -r /home/caida -i googlestd.cmd -C sh"; fi
         fi
     fi
@@ -119,7 +119,7 @@ else
             fi
         fi
         GOOGLEHOST=`grep 'google' $HOSTFILE | awk '{print $2}'`
-        if [[ $GOOGLEHOST != "" ]]; then
+        if [[ $GOOGLEHOST != "" && $HOSTFILE == "/scratch/cloudspeedtest/cloudhosts" ]]; then
             if [[ $TESTRUN -eq 0 ]]; then
                 grep 'google' $HOSTFILE | awk '{print $2}' | orgalorg -u ubuntu -k $KEYLOC -s -i google.cmd -C sh;
             else

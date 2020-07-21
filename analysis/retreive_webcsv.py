@@ -1,4 +1,5 @@
-#for retreiving speedtest results (download/upload/latency) from the cloud.
+#for getting webcsv results (download/upload/latency) from the cloud.
+#Usage: python3 retreive_webcsv.py <start_time_of_exp> <end_time_of_exp>
 import boto3
 import time
 import threading
@@ -6,6 +7,7 @@ import subprocess
 from subprocess import check_output
 import os
 import concurrent.futures
+import sys
 
 class webdata:
 	def __init__(self, vmtype, hostalias, local_dir,s_ctime,e_ctime):
@@ -248,7 +250,7 @@ if __name__ == "__main__":
 	hostalias = check_output(["cat", "/home/ubuntu/hostalias"]).decode().split('\n')[0]
 	# webdata_model = webdata(vmtype, hostalias, "/home/ubuntu/webdata", 1588870000, 1589500000)
 	# webdata_model = webdata(vmtype, hostalias, "/home/ubuntu/webdata", 1589054521, 1589500000)
-	webdata_model = webdata(vmtype, hostalias, "/home/ubuntu/webdata", 1589025854, 1589054521)
+	webdata_model = webdata(vmtype, hostalias, "/home/ubuntu/webdata", sys.argv[1], sys.argv[2])
 
 
 

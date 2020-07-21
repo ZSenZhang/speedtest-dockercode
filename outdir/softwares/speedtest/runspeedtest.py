@@ -2,6 +2,7 @@
 # Used to obtain IP addresses of speed test websites
 
 import re, sys, os, time, subprocess
+from subprocess import check_output
 
 # predefined parameters
 repeat = 20
@@ -81,9 +82,14 @@ for r in range(repeat):
     print(nodecmd)
 
   elif (ss_platform == 'ookla'):
+    sys_user = check_output(['whoami'], shell=True).decode().split('\n')[0]
+    is_eu = (sys_user == 'caida')
     ookla_server = server_hint.split(' - ')[0].split(',')[0].replace(" ","_")
     ookla_net = server_hint.split(' - ')[1].replace(" ","_")
-    nodecmd = "node "+nodename+" "+outputname+" -city "+ookla_server+" -net "+ookla_net
+    if not is_eu:
+      nodecmd = "node "+nodename+" "+outputname+" -city "+ookla_server+" -net "+ookla_net
+    else:
+      nodecmd = "node "+"ookla_eu.js"+" "+outputname+" -city "+ookla_server+" -net "+ookla_net
     print(nodecmd)
 
   else:

@@ -3,3 +3,5 @@ spservers/*.json
 spservers/*.txt
 spservers/*.ip
 serverlinks/csp*
+.gitignore
+**/.DS_Store

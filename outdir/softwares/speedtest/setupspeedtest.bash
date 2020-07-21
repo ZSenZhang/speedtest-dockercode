@@ -18,8 +18,8 @@ rm $EXPRPROFILE
 #go get ./cmd/ndt7-client
 
 sudo mv outdir/softwares/ndt7-client /usr/local/bin/
-
 sudo setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
+
 
 echo "Downloading someta..."
 #go version someta
@@ -63,7 +63,7 @@ source $EXPRPROFILE
 
 npm install puppeteer
 npm install commander
-
+sudo sysctl -w kernel.unprivileged_userns_clone=1
 
 EXPEXIST=`grep "exprprofile" /home/$LNAME/.profile |wc -l`
 if [[ $EXPEXIST == "0" ]]; then

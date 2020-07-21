@@ -22,6 +22,7 @@ type MlabInfo struct {
 type SpeedServer struct {
 	Type        string      `json:"type"`
 	Id          string      `json:"id"`
+	Identifier  string      `json:"identifier"`
 	Location    JSONPoint   `json:"location"`
 	Country     string      `json:"country"`
 	Host        string      `json:"host"`
@@ -32,4 +33,20 @@ type SpeedServer struct {
 	Enabled     bool        `json:"enabled"`
 	LastUpdated time.Time   `json:"lastupdated"`
 	Additional  interface{} `json:"additional"`
+}
+
+type VMDataStatus struct {
+	Mon        string `json:"mon"`
+	BdrmapFile string `json:"bdrmapfile"`
+	TraceFile  string `json:"trfile"`
+}
+
+//struct for storing interdomain link
+type Link struct {
+	Region  string `json:"region"`
+	Linkkey string `json:"linkkey"`
+	NearIP  string `json:"nearip"`
+	FarIP   string `json:"farip"`
+	FarAS   string `json:"faras"`
+	Covered bool   `json:"covered"`
 }

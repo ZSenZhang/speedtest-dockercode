@@ -54,7 +54,7 @@ func convmlabtomongo(cfg *common.Config, ndt []NDTServer) []spdb.SpeedServer {
 	for nidx, nserver := range ndt {
 		loc := spdb.JSONPoint{Type: "Point", Coord: []float64{nserver.Lon, nserver.Lat}}
 		mlabinfo := spdb.MlabInfo{Url: nserver.Url, Version: nserver.Version}
-		spslice[nidx] = spdb.SpeedServer{Type: "mlab", Id: nserver.Site, Location: loc, Country: nserver.Country, City: nserver.City, Host: nserver.Host, IPv4: nserver.IPv4, IPv6: nserver.IPv6, Asnv4: iph.IPv4toASN(net.ParseIP(nserver.IPv4)), Enabled: true, LastUpdated: cfg.StartTime, Additional: mlabinfo}
+		spslice[nidx] = spdb.SpeedServer{Type: "mlab", Id: nserver.Site, Identifier: nserver.Host, Location: loc, Country: nserver.Country, City: nserver.City, Host: nserver.Host, IPv4: nserver.IPv4, IPv6: nserver.IPv6, Asnv4: iph.IPv4toASN(net.ParseIP(nserver.IPv4)), Enabled: true, LastUpdated: cfg.StartTime, Additional: mlabinfo}
 	}
 	return spslice
 }

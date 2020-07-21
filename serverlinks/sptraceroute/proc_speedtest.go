@@ -8,10 +8,9 @@ import (
 	"path/filepath"
 	"serverlinks/bdrmaplink"
 	"serverlinks/config"
+	"serverlinks/iputils"
 	"sort"
 	"strings"
-
-	"github.com/zmap/go-iptree/iptree"
 )
 
 const (
@@ -47,7 +46,7 @@ type Hop struct {
 	AS       string  `json:"-"`
 }
 
-func ParseServerTrace(Param *config.Config, idlink map[string]*bdrmaplink.Link, farlink map[string][]*bdrmaplink.Link, servermap map[string]*ServerLink, prefixip *iptree.IPTree, platform Testplatform) {
+func ParseServerTrace(Param *config.Config, idlink map[string]*bdrmaplink.Link, farlink map[string][]*bdrmaplink.Link, servermap map[string]*ServerLink, prefixip *iputils.IPHandler, platform Testplatform) {
 	var tracewarts string
 	var out bytes.Buffer
 	if prefixip == nil {

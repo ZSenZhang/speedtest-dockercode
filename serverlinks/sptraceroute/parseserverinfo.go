@@ -45,11 +45,31 @@ type NDTServer struct {
 }
 
 type ServerEssentials struct {
-	Type       Testplatform
-	IPv4       string
-	ASN        string
-	Identifier string
-	VP         string
+	//	Type       Testplatform
+	//	IPv4       string
+	//	ASN        string
+	//	Identifier string
+	Server *spdb.SpeedServer
+	VP     string
+}
+
+func LoadServerMongo(mdb *spdb.SpeedtestMongo) map[string]*ServerEssentials {
+	servermap := make(map[string]*spdb.SpeedEssentials)
+	if mdb != nil {
+		allser, err := mdb.QueryEnabledServers()
+		if err != nil {
+			log.Fatal("Query speed server error", err)
+		}
+		//create ip map for servers
+		for seridx, server := range allser {
+			if _, sexist := servermap[server.IPv4]; !sexist {
+				servermap[server.IPv4].Server = &allser[seridx]
+			}
+		}
+	} else {
+		log.Fatal("Mongohandler is nil")
+	}
+	return servermap
 }
 
 func LoadServer(okdatafile, ccdatafile, mldatafile string) map[string]*ServerEssentials {

@@ -6,7 +6,7 @@
 # sudo apt-get update;
 # sudo apt-get install libpcap-dev;
 # sudo apt install -y chromium-browser;
-LNAME=`echo $USER`
+LNAME=`whoami`
 EXPRPROFILE="/home/$LNAME/exprprofile"
 cd /home/$LNAME;
 rm $EXPRPROFILE

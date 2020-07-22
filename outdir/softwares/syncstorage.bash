@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 #push results to cloud storage
-LNAME=`echo $USER`
+LNAME=`whoami`
 HOSTTYPE=`cat /home/$LNAME/vmtype`
 HNAME=`cat /home/$LNAME/hostalias`
 RESULTDIR="/home/$LNAME/results"

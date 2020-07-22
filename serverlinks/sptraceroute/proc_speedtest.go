@@ -6,10 +6,12 @@ import (
 	"log"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"serverlinks/bdrmaplink"
 	"serverlinks/config"
 	"serverlinks/iputils"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -115,5 +117,20 @@ func ParseServerTrace(Param *config.Config, idlink map[string]*bdrmaplink.Link, 
 				}
 			}
 		}
+	}
+}
+
+func ParseTraceFileTs(filename string) int64 {
+	trresultre := regexp.MustCompile(`(\w+-\w+-\d+)\.(\d+)\.trace\.tar\.bz2`)
+	bname := filepath.Base(filename)
+	bnamearr := trresultre.FrinStringSubmatch(bname)
+	if len(bnamearr) == 0 {
+		return 0
+	}
+	ts, err := strconv.ParseInt(bnamearr[2], 10, 64)
+	if err != nil {
+		return 0
+	} else {
+		return ts
 	}
 }

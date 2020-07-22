@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"serverlinks/iputils"
 	"spservers/spdb"
 	"strings"
 )
@@ -50,6 +51,25 @@ type BdrResult struct {
 	LinkFile    string
 	AliasesFile string
 	Tmpdir      string
+}
+
+type TrConfig struct {
+	ScamperBin  string
+	ResultDir   string
+	Prefix2ASFilev4 string
+	Worker      int
+	Cleanup     bool
+	MMclient    *mmbot.MMBot
+	MongoClient *spdb.SpeedtestMongo
+	Prefix2As   *iputils.IPHandler
+}
+
+type TrResult struct {
+	MetaFile         string
+	NDTWartsFile     string
+	OoklaWartsFile   string
+	ComcastWartsFile string
+	Tmpdir           string
 }
 
 const PROJECTDIR = "/scratch/cloudspeedtest"
@@ -269,5 +289,65 @@ func (Param *BdrConfig) PrepareData(resultfile string) *BdrResult {
 }
 
 func (b *BdrResult) CleanupTmp() {
+	os.RemoveAll(b.Tmpdir)
+}
+
+func ReadTrConfig() *TrConfig {
+	Param := &TrConfig{}
+	flag.StringVar(&Param.ScamperBin, "scamper", filepath.Join(PROJECTDIR, "bin/scamper/bin/"), "path to scamper util binaries")
+	flag.StringVar(&Param.ResultDir, "r", filepath.Join(PROJECTDIR, "result/trace"), "path to result file to be analyze (assume in tar.bz format)")
+	flag.StringVar(&Param.Prefix2Asv4, "pfxv4", "", "path to IPv4 prefix2as file")
+	flag.IntVar(&Param.Worker, "w", 10, "Number of workers")
+	flag.Parse()
+	if _, err := os.Stat(Param.ScamperBin); os.IsNotExist(err) {
+		log.Panic("scamper bin directory does not exist")
+	}
+	if _, err := os.Stat(Param.ResultDir); os.IsNotExist(err) {
+		log.Panic("Result directory does not exist")
+	}
+	if Param.Worker < 0 {
+		Param.Worker = 1
+	}
+	Param.MMclient = mmbot.NewMMBot(Param.MattermostConfig)
+	Param.MongoClient = spdb.NewMongoDB(Param.MongoConfig, "speedtest")
+	if len(Param.Prefix2Asv4)
+	iputils.NewIPHandler()
+	return Param
+}
+
+func (*TrConfig) PrepareTraceData(vmname string) *TrResult {
+	tresult := &TrResult{}
+	tmpdir, err := ioutil.TempDir("./", "tr")
+	if err != nil {
+		log.Panic(err)
+	}
+	tresult.Tmpdir, _ = filepath.Abs(tmpdir)
+	resultdir := filepath.Join(tresult.Tmpdir, "results/trace")
+	for _, f := range files {
+		if strings.Contains(f.Name(), "meta") {
+			tresult.MetaFile = filepath.Join(resultdir, f.Name())
+			continue
+		}
+		if strings.Contains(f.Name(), "ndt") {
+			tresult.NDTWartsFile = filepath.Join(resultdir, f.Name())
+			continue
+		}
+		if strings.Contains(f.Name(), "ookla") {
+			tresult.OoklaWartsFile = filepath.Join(resultdir, f.Name())
+			continue
+		}
+		if strings.Contains(f.Name(), "comcast") {
+			tresult.ComcastWartsFile = filepath.Join(resultdir, f.Name())
+			continue
+		}
+	}
+	if len(tresult.MetaFile) == 0 || len(tresult.NDTWartsFile) == 0 || len(tresults.OoklaWartsFile) == 0 || len(tresults.ComcastWartsFile) == 0 {
+		log.Println("Incomplete trace file", tresult)
+		tresult.CleanupTmp()
+		return nil
+	}
+	return tresult
+}
+func (b *TrResult) CleanupTmp() {
 	os.RemoveAll(b.Tmpdir)
 }

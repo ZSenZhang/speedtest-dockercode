@@ -33,16 +33,16 @@ func main() {
 			if len(nameslice) > 0 {
 				wg.Add(1)
 				workerch <- 1
-				go processVMbdrmap(nameslice[1], bdrlnkconfig, wg, workerch)
-				break
+				go processVMbdrmap(nameslice[1], bdrlnkconfig, &wg, workerch)
 			}
 		}
 	}
+	log.Println("waiting all vm to complete")
 	wg.Wait()
 	//if there is a newer bdrmap file, compute the links and load into db
 }
 
-func processVMbdrmap(vmname string, config *config.BdrConfig, wg sync.WaitGroup, workerch chan int) {
+func processVMbdrmap(vmname string, config *config.BdrConfig, wg *sync.WaitGroup, workerch chan int) {
 	defer wg.Done()
 	vmpath := filepath.Join(config.ResultDir, vmname)
 	log.Println("working on", vmpath)
@@ -99,5 +99,8 @@ func processVMbdrmap(vmname string, config *config.BdrConfig, wg sync.WaitGroup,
 			break
 		}
 	}
+	config.CleanupTmp()
 	<-workerch
+	log.Println("finishing", vmname)
+	return
 }

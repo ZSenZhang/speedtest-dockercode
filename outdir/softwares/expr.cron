@@ -1,1 +1,1 @@
-2 * * * * /usr/bin/flock -w 0 /home/ubuntu/sptestlock bash outdir/softwares/speedtest/runtestround.bash >lastoutput 2>&1
+2 * * * * /usr/bin/flock -w 0 /home/caida/sptestlock bash outdir/softwares/speedtest/runtestround.bash >lastoutput 2>&1

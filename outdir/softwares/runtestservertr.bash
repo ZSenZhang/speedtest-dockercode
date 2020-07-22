@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-LNAME=`whoami`
+LNAME=`logname`
 DATAFILEDIR=${1%/}
 if [ -z "$DATAFILEDIR" ]
 then

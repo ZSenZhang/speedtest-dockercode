@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-LNAME=`whoami`
+LNAME=`logname`
 CAIDA="192.172.226.0/24"
 STORAGE=""
 HNAME=`cat /home/$LNAME/vmtype`

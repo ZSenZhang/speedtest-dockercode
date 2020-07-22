@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-LNAME=`whoami`
+LNAME=`logname`
 HNAME=`cat /home/$LNAME/hostalias`
 HOSTTYPE=`cat /home/$LNAME/vmtype`
 LISTFILE="/home/$LNAME/outdir/datafiles/$HOSTTYPE-serverlist.csv"

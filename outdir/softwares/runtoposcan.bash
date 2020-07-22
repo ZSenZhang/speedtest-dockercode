@@ -1,5 +1,5 @@
 #/bin/bash
-LNAME=`whoami`
+LNAME=`logname`
 DATAFILEDIR=${1%/}
 OUTPUTDIR=${2%/}
 PEERINGFILE=""

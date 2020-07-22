@@ -54,14 +54,14 @@ type BdrResult struct {
 }
 
 type TrConfig struct {
-	ScamperBin  string
-	ResultDir   string
+	ScamperBin      string
+	ResultDir       string
 	Prefix2ASFilev4 string
-	Worker      int
-	Cleanup     bool
-	MMclient    *mmbot.MMBot
-	MongoClient *spdb.SpeedtestMongo
-	Prefix2As   *iputils.IPHandler
+	Worker          int
+	Cleanup         bool
+	MMclient        *mmbot.MMBot
+	MongoClient     *spdb.SpeedtestMongo
+	Prefix2As       *iputils.IPHandler
 }
 
 type TrResult struct {
@@ -296,7 +296,7 @@ func ReadTrConfig() *TrConfig {
 	Param := &TrConfig{}
 	flag.StringVar(&Param.ScamperBin, "scamper", filepath.Join(PROJECTDIR, "bin/scamper/bin/"), "path to scamper util binaries")
 	flag.StringVar(&Param.ResultDir, "r", filepath.Join(PROJECTDIR, "result/trace"), "path to result file to be analyze (assume in tar.bz format)")
-	flag.StringVar(&Param.Prefix2Asv4, "pfxv4", "", "path to IPv4 prefix2as file")
+	flag.StringVar(&Param.Prefix2ASFilev4, "pfxv4", "", "path to IPv4 prefix2as file")
 	flag.IntVar(&Param.Worker, "w", 10, "Number of workers")
 	flag.Parse()
 	if _, err := os.Stat(Param.ScamperBin); os.IsNotExist(err) {
@@ -310,8 +310,12 @@ func ReadTrConfig() *TrConfig {
 	}
 	Param.MMclient = mmbot.NewMMBot(Param.MattermostConfig)
 	Param.MongoClient = spdb.NewMongoDB(Param.MongoConfig, "speedtest")
-	if len(Param.Prefix2Asv4)
-	iputils.NewIPHandler()
+	if len(Param.Prefix2ASFilev4) > 0 {
+		Param.Prefix2As = iputils.NewIPHandler(Param.Prefix2ASFilev4)
+	} else {
+		//latest
+		Param.Prefix2As = iputils.NewIPHandler()
+	}
 	return Param
 }
 

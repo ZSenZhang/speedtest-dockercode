@@ -83,7 +83,11 @@ for r in range(repeat):
 
   elif (ss_platform == 'ookla'):
     sys_user = check_output(['whoami'], shell=True).decode().split('\n')[0]
-    is_eu = (sys_user == 'caida')
+    hostalias = check_output(['cat','/home/'+sys_user+'/hostalias']).decode().split('\n')[0]
+    if 'eu' in hostalias:
+      is_eu = True
+    else:
+      is_eu = False
     ookla_server = server_hint.split(' - ')[0].split(',')[0].replace(" ","_")
     ookla_net = server_hint.split(' - ')[1].replace(" ","_")
     if not is_eu:
